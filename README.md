@@ -1,0 +1,2 @@
+# goinfo
+go information
