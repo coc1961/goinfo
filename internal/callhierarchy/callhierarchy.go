@@ -9,8 +9,6 @@ import (
 	"github.com/coc1961/goinfo/internal/run"
 )
 
-var goRoot = os.Getenv("GOROOT")
-
 type callService struct {
 }
 
@@ -30,6 +28,8 @@ func (c *callService) Parse(path string, line, col int) (*call, error) {
 	return c.parse(fmt.Sprintf("%s:%d:%d", path, line, col), 0, []string{})
 }
 func (c *callService) parse(path string, level int, callStack []string) (*call, error) {
+	var goRoot = os.Getenv("GOROOT")
+
 	str, err := run.CallHierarchy(path)
 	if err != nil {
 		return nil, err
