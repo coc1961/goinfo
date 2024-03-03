@@ -2,14 +2,13 @@ package callhierarchy
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/coc1961/goinfo/internal/run"
 )
-
-var goRoot = os.Getenv("GOROOT")
 
 type callService struct {
 }
@@ -30,11 +29,20 @@ func (c *callService) Parse(path string, line, col int) (*call, error) {
 	return c.parse(fmt.Sprintf("%s:%d:%d", path, line, col), 0, []string{})
 }
 func (c *callService) parse(path string, level int, callStack []string) (*call, error) {
+	if strings.Contains(path, "@") {
+		return nil, errors.New("skip library")
+	}
+	var goRoot = os.Getenv("GOROOT")
+
+	fmt.Fprintln(os.Stderr, "processing...", path)
+
 	str, err := run.CallHierarchy(path)
 	if err != nil {
+		fmt.Fprintln(os.Stderr, path, err)
 		return nil, err
 	}
-	arr := strings.Split(str, "\n")
+
+	arr := strings.Split(strings.TrimRight(str, "\n"), "\n")
 	var cl *call
 
 	for _, s := range arr {
@@ -65,10 +73,12 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 				}
 				if processFun {
 					if !strings.Contains(cl1.path, goRoot) {
-						_callStack := append([]string{cl1.caller}, callStack...)
+						_callStack := append([]string{cl1.path}, callStack...)
 						tmp, err := c.parse(cl1.path, level+1, _callStack)
 						if err == nil && tmp != nil {
 							cl1.callStack = tmp.callStack
+						} else {
+							fmt.Fprintln(os.Stderr, err)
 						}
 					}
 				}
@@ -76,6 +86,24 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 			}
 		}
 	}
+
+	if len(arr) > 0 {
+		// Is interface?
+		if strings.Index(arr[len(arr)-1], "identifier:") == 0 {
+			str, err := run.Implementation(path)
+			if err == nil {
+				arr := strings.Split(strings.TrimRight(str, "\n"), "\n")
+				for _, s := range arr {
+					arr1 := strings.Split(s, " ")
+					cl1, err := c.parse(arr1[0], level, callStack)
+					if err == nil {
+						cl.callStack = append(cl.callStack, cl1)
+					}
+				}
+			}
+		}
+	}
+
 	return cl, nil
 }
 
