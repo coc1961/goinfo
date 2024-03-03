@@ -24,5 +24,5 @@ func main() {
 		fmt.Printf("%v\n", err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf("%v\n", a)
+	fmt.Printf("%v \n", a)
 }
