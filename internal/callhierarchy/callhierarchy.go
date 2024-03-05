@@ -88,7 +88,7 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 	}
 
 	if len(arr) > 0 {
-		// Is interface?
+		//  Is interface?
 		if strings.Index(arr[len(arr)-1], "identifier:") == 0 {
 			str, err := run.Implementation(path)
 			if err == nil {
