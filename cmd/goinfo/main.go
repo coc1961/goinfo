@@ -13,7 +13,7 @@ func main() {
 	src := flag.String("s", "", "source go file")
 	line := flag.Int("l", 0, "line number")
 	col := flag.Int("c", 0, "column number")
-	find := flag.String("f", "", "function name with parameters")
+	find := flag.String("f", "", "function name with parameters (replace -l and -c)")
 	flag.Parse()
 
 	if *src == "" {
