@@ -73,8 +73,8 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 				}
 				if processFun {
 					if !strings.Contains(cl1.path, goRoot) {
-						_callStack := append([]string{cl1.path}, callStack...)
-						tmp, err := c.parse(cl1.path, level+1, _callStack)
+						callStack := append([]string{cl1.path}, callStack...)
+						tmp, err := c.parse(cl1.path, level+1, callStack)
 						if err == nil && tmp != nil {
 							cl1.callStack = tmp.callStack
 						} else {
@@ -88,17 +88,26 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 	}
 
 	if len(arr) > 0 {
-		//  Is interface?
+		//  Is interface? find implementation
 		if strings.Index(arr[len(arr)-1], "identifier:") == 0 {
 			str, err := run.Implementation(path)
 			if err == nil {
 				arr := strings.Split(strings.TrimRight(str, "\n"), "\n")
 				for _, s := range arr {
-					arr1 := strings.Split(s, " ")
-					_callStack := append([]string{path}, callStack...)
-					cl1, err := c.parse(arr1[0], level, _callStack)
-					if err == nil {
-						cl.callStack = append(cl.callStack, cl1)
+					path1 := strings.Split(s, " ")[0]
+					processFun := true
+					for _, cs := range callStack {
+						if cs == path1 {
+							processFun = false
+							break
+						}
+					}
+					if processFun {
+						callStack := append([]string{path1}, callStack...)
+						cl1, err := c.parse(path1, level, callStack)
+						if err == nil {
+							cl.callStack = append(cl.callStack, cl1)
+						}
 					}
 				}
 			}

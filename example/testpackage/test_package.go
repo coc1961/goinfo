@@ -11,4 +11,30 @@ func internalTest(level int) {
 		internalTest(level + 1)
 	}
 	fmt.Println(level)
+	it := getIT()
+	if it != nil {
+		it.Get()
+	}
+}
+
+func getIT() Inter {
+	return nil
+}
+
+type Inter interface {
+	Get() string
+}
+
+type InterImpl1 struct {
+}
+
+func (i InterImpl1) Get() string {
+	return "InterImpl1"
+}
+
+type InterImpl2 struct {
+}
+
+func (i InterImpl2) Get() string {
+	return "InterImpl1"
 }
