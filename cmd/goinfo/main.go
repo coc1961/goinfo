@@ -29,7 +29,7 @@ func main() {
 		b, _ := os.ReadFile(*src)
 		arr := strings.Split(string(b), "\n")
 		for i, s := range arr {
-			idx := strings.Index(s, find)
+			idx := strings.Index(s, *find)
 			if idx >= 0 {
 				*line = i + 1
 				*col = idx + 1

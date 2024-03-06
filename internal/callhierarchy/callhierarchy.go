@@ -14,11 +14,12 @@ type callService struct {
 }
 
 type call struct {
-	caller    string
-	level     int
-	isMain    bool
-	path      string
-	callStack []*call
+	caller          string
+	level           int
+	isMain          bool
+	path            string
+	callStack       []*call
+	implementNumber int
 }
 
 func New() *callService {
@@ -26,9 +27,9 @@ func New() *callService {
 }
 
 func (c *callService) Parse(path string, line, col int) (*call, error) {
-	return c.parse(fmt.Sprintf("%s:%d:%d", path, line, col), 0, []string{})
+	return c.parse(fmt.Sprintf("%s:%d:%d", path, line, col), 0, []string{}, -1)
 }
-func (c *callService) parse(path string, level int, callStack []string) (*call, error) {
+func (c *callService) parse(path string, level int, callStack []string, implLevel int) (*call, error) {
 	if strings.Contains(path, "@") {
 		return nil, errors.New("skip library")
 	}
@@ -55,6 +56,7 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 			cl1.isMain = true
 			cl1.level = level
 			cl1.callStack = []*call{}
+			cl1.implementNumber = implLevel
 			cl = cl1
 		case 10:
 			if cl != nil {
@@ -64,6 +66,7 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 				cl1.isMain = false
 				cl1.level = level
 				cl1.callStack = []*call{}
+				cl1.implementNumber = -1
 				processFun := true
 				for _, cs := range callStack {
 					if cs == arr1[9] {
@@ -74,7 +77,7 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 				if processFun {
 					if !strings.Contains(cl1.path, goRoot) {
 						callStack := append([]string{cl1.path}, callStack...)
-						tmp, err := c.parse(cl1.path, level+1, callStack)
+						tmp, err := c.parse(cl1.path, level+1, callStack, -1)
 						if err == nil && tmp != nil {
 							cl1.callStack = tmp.callStack
 						} else {
@@ -93,7 +96,7 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 			str, err := run.Implementation(path)
 			if err == nil {
 				arr := strings.Split(strings.TrimRight(str, "\n"), "\n")
-				for _, s := range arr {
+				for i, s := range arr {
 					path1 := strings.Split(s, " ")[0]
 					processFun := true
 					for _, cs := range callStack {
@@ -104,7 +107,7 @@ func (c *callService) parse(path string, level int, callStack []string) (*call, 
 					}
 					if processFun {
 						callStack := append([]string{path1}, callStack...)
-						cl1, err := c.parse(path1, level, callStack)
+						cl1, err := c.parse(path1, level, callStack, i)
 						if err == nil {
 							cl.callStack = append(cl.callStack, cl1)
 						}
@@ -129,7 +132,11 @@ func print(c *call, level int) string {
 	if strings.Index(pt, currPath) == 0 {
 		pt = pt[len(currPath):]
 	}
-	_, _ = b.WriteString(fmt.Sprintf("%slevel:%d Func:%s Path:%s\n", tab, level, c.caller, pt))
+	impLevel := ""
+	if c.implementNumber >= 0 {
+		impLevel = fmt.Sprintf("Impl:%d ", c.implementNumber)
+	}
+	_, _ = b.WriteString(fmt.Sprintf("%s%slevel:%d Func:%s Path:%s\n", tab, impLevel, level, c.caller, pt))
 	for _, c1 := range c.callStack {
 		b.WriteString(print(c1, level+1))
 	}
