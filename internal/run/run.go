@@ -6,6 +6,22 @@ import (
 	"strings"
 )
 
+func Implementation(args ...string) (string, error) {
+	_pls, err := pls()
+	if err != nil {
+		return "", err
+	}
+	_args := append([]string{"implementation"}, args...)
+	cmd := exec.Command(_pls, _args...)
+
+	b, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+
+}
+
 func CallHierarchy(args ...string) (string, error) {
 	_pls, err := pls()
 	if err != nil {
