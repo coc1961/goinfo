@@ -1,7 +1,6 @@
 package run
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -32,7 +31,6 @@ func CallHierarchy(args ...string) (string, error) {
 
 	b, err := cmd.Output()
 	if err != nil {
-		fmt.Printf("_pls: %v\n", cmd)
 		return "", err
 	}
 	return string(b), nil

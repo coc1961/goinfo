@@ -21,7 +21,7 @@ func main() {
 
 	a, err := callhierarchy.New().Parse(*src, *line, *col)
 	if err != nil {
-		fmt.Printf("%v\n", err.Error())
+		fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Printf("%v \n", a)
