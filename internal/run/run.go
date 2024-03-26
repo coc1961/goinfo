@@ -36,7 +36,7 @@ func CallHierarchy(args ...string) (string, error) {
 	return string(b), nil
 }
 
-// Find gopls program path
+// Find gopls program  path
 func pls() (string, error) {
 	cmd := exec.Command("which", "gopls")
 	b, err := cmd.Output()
