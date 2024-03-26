@@ -136,7 +136,7 @@ func print(c *call, level int) string {
 	if c.implementNumber >= 0 {
 		impLevel = fmt.Sprintf("Impl:%d ", c.implementNumber)
 	}
-	_, _ = b.WriteString(fmt.Sprintf("%s%slevel:%d Func:%s Path:%s\n", tab, impLevel, level, c.caller, pt))
+	_, _ = b.WriteString(fmt.Sprintf("%slevel:%d %s Func:%s Path:%s\n", tab, level, impLevel, c.caller, pt))
 	for _, c1 := range c.callStack {
 		b.WriteString(print(c1, level+1))
 	}
